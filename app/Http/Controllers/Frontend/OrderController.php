@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Models\ProductInventory;
 use App\Http\Controllers\Controller;
 use Gloudemans\Shoppingcart\Facades\Cart;
+use Illuminate\Support\Facades\Http;
 
 class OrderController extends Controller
 {
@@ -147,19 +148,19 @@ class OrderController extends Controller
 	}
 
     public function checkout()
-    {
-        if (Cart::count() == 0) {
+	{
+		if (Cart::count() == 0) {
 			return redirect('carts');
 		}
 
 		$items = Cart::content();
-
 		$totalWeight = $this->_getTotalWeight() / 1000;
 
 		$provinces = $this->getProvinces();
-		
-		$cities = isset(auth()->user()->province_id) ? $this->getCities(auth()->user()->province_id) : [];
-        
+		$cities = auth()->user()->province_id 
+			? $this->getCities(auth()->user()->province_id) 
+			: [];
+
 		return view('frontend.orders.checkout', compact('items','totalWeight','provinces','cities'));
 	}
 
@@ -386,6 +387,43 @@ class OrderController extends Controller
 			->firstOrFail();
 
 		return view('frontend.orders.received', compact('order'));
+	}
+
+	protected function getProvinces()
+	{
+		$response = \Http::withHeaders([
+			'key' => config('ongkir.api_key')
+		])->get(config('ongkir.base_url') . '/starter/province');
+
+		if ($response->successful() && isset($response->json()['rajaongkir']['results'])) {
+			return collect($response->json()['rajaongkir']['results'])
+				->pluck('province', 'province_id')
+				->toArray();
+		}
+
+		return [];
+	}
+
+	protected function getCities($provinceId)
+	{
+		$response = \Http::withHeaders([
+			'key' => config('ongkir.api_key')
+		])->get(config('ongkir.base_url') . '/starter/city', [
+			'province' => $provinceId
+		]);
+
+		if ($response->successful() && isset($response->json()['rajaongkir']['results'])) {
+			return collect($response->json()['rajaongkir']['results'])
+				->pluck('city_name', 'city_id')
+				->toArray();
+		}
+
+		return [];
+	}
+
+	public function getCitiesAjax($provinceId)
+	{
+		return response()->json($this->getCities($provinceId));
 	}
 
 }

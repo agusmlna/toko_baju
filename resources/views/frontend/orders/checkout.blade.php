@@ -268,3 +268,21 @@
 		</div>
 	</div>
 @endsection
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function () {
+    $('#shipping-province').on('change', function () {
+        let provinceId = $(this).val();
+        if (provinceId) {
+            $.get('/get-cities/' + provinceId, function (data) {
+                $('#shipping-city').empty().append('<option value="">-- Pilih Kota --</option>');
+                $.each(data, function (id, name) {
+                    $('#shipping-city').append(new Option(name, id));
+                });
+            });
+        } else {
+            $('#shipping-city').empty().append('<option value="">-- Pilih Kota --</option>');
+        }
+    });
+});
+</script>

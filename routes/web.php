@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\OrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,3 +79,8 @@ Route::post('payments/notification', [\App\Http\Controllers\Frontend\PaymentCont
 Route::get('payments/completed', [\App\Http\Controllers\Frontend\PaymentController::class, 'completed']);
 Route::get('payments/failed', [\App\Http\Controllers\Frontend\PaymentController::class, 'failed']);
 Route::get('payments/unfinish', [\App\Http\Controllers\Frontend\PaymentController::class, 'unfinish']);
+
+// TEST RAJAONGKIR
+Route::get('/provinces', [App\Http\Controllers\Frontend\OrderController::class, 'getProvinces']);
+Route::get('/cities/{province}', [App\Http\Controllers\Frontend\OrderController::class, 'getCities']);
+Route::get('/get-cities/{provinceId}', [OrderController::class, 'getCitiesAjax']);
